@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const TODO_SERVICE_URL = 'http://localhost:8002';
+const TODO_SERVICE_URL = 'http://todo-app.local';
 
 const TodoApp = ({ user, token, onLogout }) => {
   const [todos, setTodos] = useState([]);

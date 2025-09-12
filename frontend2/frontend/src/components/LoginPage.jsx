@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const USER_SERVICE_URL = 'http://localhost:8001';
+const USER_SERVICE_URL = 'http://todo-app.local';
 
 const LoginPage = ({ onLogin }) => {
   const [showLogin, setShowLogin] = useState(true);
