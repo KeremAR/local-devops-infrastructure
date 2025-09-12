@@ -4,3 +4,12 @@ metadata:
   name: todo-app
   labels:
     name: todo-app
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jenkins
+  labels:
+    name: jenkins
