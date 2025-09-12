@@ -29,7 +29,7 @@ pipeline {
 
     environment {
         GITHUB_REGISTRY = 'ghcr.io'
-        GITHUB_USER = 'KeremAR'
+        GITHUB_USER = 'keremar'
         IMAGE_TAG = "${BUILD_NUMBER}"
         REGISTRY_CREDENTIALS = 'github-registry'
     }
@@ -149,7 +149,8 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+        echo 'Cleaning up the workspace...'
+        deleteDir()
         }
         success {
             echo "🚀 Pipeline completed successfully!"
