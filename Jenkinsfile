@@ -15,9 +15,6 @@ pipeline {
                     image: docker:20.10.16-dind
                     securityContext:
                       privileged: true
-                    volumeMounts:
-                    - name: docker-sock
-                      mountPath: /var/run/docker.sock
                   - name: kubectl
                     image: bitnami/kubectl:latest
                     command:
