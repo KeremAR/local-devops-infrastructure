@@ -1,0 +1,12 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Test için hem app.py hem de test_app.py'yi kopyala
+COPY user-service/app.py .
+COPY user-service/test_app.py .
+
+CMD ["pytest", "test_app.py", "-v"]

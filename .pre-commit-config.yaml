@@ -60,13 +60,13 @@ repos:
     hooks:
       - id: run-tests
         name: Run Backend Tests
-        entry: docker-compose -f docker-compose.test.yml run --rm user-service-test
+        entry: docker compose -f docker-compose.test.yml run --rm -T user-service-test
         language: system
         stages: [pre-push]
         pass_filenames: false
       - id: run-todo-tests
         name: Run Todo Service Tests
-        entry: docker-compose -f docker-compose.test.yml run --rm todo-service-test
+        entry: docker compose -f docker-compose.test.yml run --rm -T todo-service-test
         language: system
         stages: [pre-push]
         pass_filenames: false

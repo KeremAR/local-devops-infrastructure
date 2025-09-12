@@ -36,7 +36,7 @@ const LoginPage = ({ onLogin }) => {
           username: authForm.username,
           email: authForm.username + '@example.com',
         };
-        
+
         localStorage.setItem('token', access_token);
         localStorage.setItem('user', JSON.stringify(userData));
         onLogin(access_token, userData);
@@ -78,7 +78,7 @@ const LoginPage = ({ onLogin }) => {
           </h1>
           <div className="flex mb-4">
             <button
-              className={`flex-1 py-2 px-4 rounded-l-lg ${ 
+              className={`flex-1 py-2 px-4 rounded-l-lg ${
                 showLogin ? 'bg-blue-500 text-white' : 'bg-gray-200'
               }`}
               onClick={() => setShowLogin(true)}
