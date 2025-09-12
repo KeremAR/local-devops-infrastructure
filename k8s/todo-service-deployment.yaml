@@ -15,10 +15,12 @@ spec:
       labels:
         app: todo-service
     spec:
+      imagePullSecrets:
+      - name: github-registry-secret
       containers:
       - name: todo-service
-        image: local-devops-infrastructure-todo-service:latest
-        imagePullPolicy: Never
+        image: ghcr.io/keremar/todo-app-todo-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8002
         env:
