@@ -119,29 +119,27 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
-                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
-                        sh '''
-                            # Apply K8s manifests
-                            kubectl apply -f k8s/namespace.yaml
-                            kubectl apply -f k8s/user-service-deployment.yaml
-                            kubectl apply -f k8s/user-service-service.yaml
-                            kubectl apply -f k8s/todo-service-deployment.yaml
-                            kubectl apply -f k8s/todo-service-service.yaml
-                            kubectl apply -f k8s/frontend-deployment.yaml
-                            kubectl apply -f k8s/frontend-service.yaml
-                            kubectl apply -f k8s/ingress.yaml
+                    sh '''
+                        # Apply K8s manifests
+                        kubectl apply -f k8s/namespace.yaml
+                        kubectl apply -f k8s/user-service-deployment.yaml
+                        kubectl apply -f k8s/user-service-service.yaml
+                        kubectl apply -f k8s/todo-service-deployment.yaml
+                        kubectl apply -f k8s/todo-service-service.yaml
+                        kubectl apply -f k8s/frontend-deployment.yaml
+                        kubectl apply -f k8s/frontend-service.yaml
+                        kubectl apply -f k8s/ingress.yaml
 
-                            # Restart deployments to pull latest images
-                            kubectl rollout restart deployment/user-service -n todo-app
-                            kubectl rollout restart deployment/todo-service -n todo-app
-                            kubectl rollout restart deployment/frontend -n todo-app
+                        # Restart deployments to pull latest images
+                        kubectl rollout restart deployment/user-service -n todo-app
+                        kubectl rollout restart deployment/todo-service -n todo-app
+                        kubectl rollout restart deployment/frontend -n todo-app
 
-                            # Wait for rollout to complete
-                            kubectl rollout status deployment/user-service -n todo-app
-                            kubectl rollout status deployment/todo-service -n todo-app
-                            kubectl rollout status deployment/frontend -n todo-app
-                        '''
-                    }
+                        # Wait for rollout to complete
+                        kubectl rollout status deployment/user-service -n todo-app
+                        kubectl rollout status deployment/todo-service -n todo-app
+                        kubectl rollout status deployment/frontend -n todo-app
+                    '''
                 }
             }
         }
