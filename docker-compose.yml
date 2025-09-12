@@ -35,12 +35,9 @@ services:
       retries: 3
 
   frontend:
-    build: ./frontend
+    build: ./frontend2/frontend
     ports:
       - "3000:3000"
-    environment:
-      - USER_SERVICE_URL=http://user-service:8001
-      - TODO_SERVICE_URL=http://todo-service:8002
     depends_on:
       - user-service
       - todo-service
