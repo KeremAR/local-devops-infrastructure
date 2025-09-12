@@ -11,6 +11,9 @@ pipeline {
                 spec:
                   serviceAccountName: jenkins
                   containers:
+                  - name: jnlp
+                    image: jenkins/inbound-agent:latest
+                    args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
                   - name: docker
                     image: docker:20.10.16-dind
                     securityContext:
@@ -26,7 +29,7 @@ pipeline {
 
     environment {
         GITHUB_REGISTRY = 'ghcr.io'
-        GITHUB_USER = 'keremar'
+        GITHUB_USER = 'KeremAR'
         IMAGE_TAG = "${BUILD_NUMBER}"
         REGISTRY_CREDENTIALS = 'github-registry'
     }
