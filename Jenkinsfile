@@ -20,8 +20,8 @@ pipeline {
                       privileged: true
                   - name: kubectl
                     image: bitnami/kubectl:latest
-                    command:
-                    - cat
+                    command: ['sleep']
+                    args: ['99d']
                     tty: true
             '''
         }
