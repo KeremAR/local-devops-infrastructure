@@ -1,10 +1,15 @@
 pipeline {
     agent {
         kubernetes {
+            defaultContainer 'jnlp'
             yaml '''
                 apiVersion: v1
                 kind: Pod
+                metadata:
+                  labels:
+                    jenkins: slave
                 spec:
+                  serviceAccountName: jenkins
                   containers:
                   - name: docker
                     image: docker:20.10.16-dind
@@ -30,7 +35,7 @@ pipeline {
         GITHUB_REGISTRY = 'ghcr.io'
         GITHUB_USER = 'keremar'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        REGISTRY_CREDENTIALS = 'github-container-registry'
+        REGISTRY_CREDENTIALS = 'github-registry'
     }
 
     stages {
