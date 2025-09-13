@@ -29,7 +29,10 @@ pipeline {
                     config.imageTag = env.IMAGE_TAG
 
                     echo "🔨 Building all services in parallel..."
-                    env.BUILT_IMAGES = buildAllServices(config).join(',')
+                    def builtImages = buildAllServices(config)
+                    // Store images as a string for passing between stages
+                    env.BUILT_IMAGES = builtImages.join(',')
+                    echo "Built images: ${env.BUILT_IMAGES}"
                 }
             }
         }
@@ -48,6 +51,7 @@ pipeline {
                 script {
                     echo "🚀 Pushing images to registry..."
                     def images = env.BUILT_IMAGES.split(',')
+                    echo "Images to push: ${images}"
                     pushToRegistry([
                         images: images,
                         registry: env.GITHUB_REGISTRY,
