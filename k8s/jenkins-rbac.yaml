@@ -1,25 +1,43 @@
-# jenkins-rbac.yaml
+# jenkins-rbac.yaml - GÜNCELLENMİŞ VE TAM YETKİLİ HALİ
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  # isim aynı kalabilir, kubectl mevcut olanı güncelleyecektir
   name: jenkins-agent-manager
 rules:
-- apiGroups: [""]
-  resources: ["pods", "pods/exec", "pods/log", "secrets", "events"]
+- apiGroups: [""] # 'core' API group
+  resources:
+  - pods
+  - pods/exec
+  - pods/log
+  - secrets
+  - events
+  - persistentvolumeclaims
+  - services
+  - namespaces
   verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
-- apiGroups: [""]
-  resources: ["persistentvolumeclaims"]
-  verbs: ["create", "delete"]
+
+- apiGroups: ["apps"] # 'apps' API group
+  resources:
+  - deployments
+  - replicasets
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["networking.k8s.io"] # 'networking' API group
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: jenkins-agent-manager-binding
-  namespace: jenkins # DİKKAT: Jenkins'in kurulu olduğu namespace
+  namespace: jenkins
 subjects:
 - kind: ServiceAccount
-  name: jenkins # Helm ile kurulan Service Account'un adı
+  name: jenkins
   namespace: jenkins
 roleRef:
   kind: ClusterRole
@@ -30,12 +48,26 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: jenkins-agent-manager-binding-default-ns
-  namespace: default # DİKKAT: Yetkinin verileceği namespace
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: jenkins
+  namespace: jenkins
+roleRef:
+  kind: ClusterRole
+  name: jenkins-agent-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-admin-binding-for-todo-app
+  namespace: todo-app # DİKKAT: Yetkinin verileceği namespace
 subjects:
 - kind: ServiceAccount
   name: jenkins # Yetkiyi alacak Service Account
   namespace: jenkins # Service Account'un bulunduğu namespace
 roleRef:
   kind: ClusterRole
-  name: jenkins-agent-manager
+  name: admin # 'admin' ClusterRole'ü genellikle yeterli olur
   apiGroup: rbac.authorization.k8s.io

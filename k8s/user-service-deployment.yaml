@@ -19,7 +19,7 @@ spec:
       - name: github-registry-secret
       containers:
       - name: user-service
-        image: ghcr.io/keremarr/todo-app-user-service:latest
+        image: ghcr.io/keremar/todo-app-user-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8001
