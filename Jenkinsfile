@@ -1,35 +1,10 @@
+@Library('todo-app-shared-library') _
+
 pipeline {
     agent {
         kubernetes {
             defaultContainer 'jnlp'
-            yaml '''
-                apiVersion: v1
-                kind: Pod
-                metadata:
-                  labels:
-                    jenkins: slave
-                spec:
-                  serviceAccountName: jenkins
-                  volumes:
-                  - name: docker-cache
-                    persistentVolumeClaim:
-                      claimName: jenkins-docker-cache-pvc
-                  containers:
-                  - name: jnlp
-                    image: jenkins/inbound-agent:latest
-                    args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
-                    volumeMounts:
-                    - name: docker-cache
-                      mountPath: /home/jenkins/.docker
-                  - name: docker
-                    image: docker:20.10.16-dind
-                    securityContext:
-                      privileged: true
-                    volumeMounts:
-                    - name: docker-cache
-                      mountPath: /var/lib/docker
-
-            '''
+            yaml com.company.jenkins.Utils.getPodTemplate()
         }
     }
 
@@ -47,116 +22,49 @@ pipeline {
             }
         }
 
-        stage('Build Images') {
-            parallel {
-                stage('Build User Service') {
-                    steps {
-                        container('docker') {
-                            script {
-                                def userServiceImage = "${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-user-service:${IMAGE_TAG}"
-                                sh "docker build -t ${userServiceImage} -f user-service/Dockerfile ."
-                                sh "docker tag ${userServiceImage} ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-user-service:latest"
-                            }
-                        }
-                    }
-                }
+        stage('Build Services') {
+            steps {
+                script {
+                    def config = com.company.jenkins.Utils.getServiceConfig()
+                    config.imageTag = env.IMAGE_TAG
 
-                stage('Build Todo Service') {
-                    steps {
-                        container('docker') {
-                            script {
-                                def todoServiceImage = "${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-todo-service:${IMAGE_TAG}"
-                                sh "docker build -t ${todoServiceImage} -f todo-service/Dockerfile ."
-                                sh "docker tag ${todoServiceImage} ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-todo-service:latest"
-                            }
-                        }
-                    }
-                }
-
-                stage('Build Frontend') {
-                    steps {
-                        container('docker') {
-                            script {
-                                def frontendImage = "${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-frontend:${IMAGE_TAG}"
-                                sh "docker build -t ${frontendImage} -f frontend2/frontend/Dockerfile frontend2/frontend/"
-                                sh "docker tag ${frontendImage} ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-frontend:latest"
-                            }
-                        }
-                    }
+                    echo "🔨 Building all services in parallel..."
+                    env.BUILT_IMAGES = buildAllServices(config).join(',')
                 }
             }
         }
 
         stage('Run Tests') {
-            parallel {
-                stage('Backend Tests') {
-                    steps {
-                        container('docker') {
-                            sh 'docker compose -f docker-compose.test.yml run --rm -T user-service-test'
-                            sh 'docker compose -f docker-compose.test.yml run --rm -T todo-service-test'
-                        }
-                    }
+            steps {
+                script {
+                    echo "🧪 Running backend tests..."
+                    runBackendTests()
                 }
             }
         }
 
-        stage('Push Images') {
+        stage('Push to Registry') {
             steps {
-                container('docker') {
-                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", passwordVariable: 'REGISTRY_PASSWORD', usernameVariable: 'REGISTRY_USERNAME')]) {
-                        sh '''
-                            echo $REGISTRY_PASSWORD | docker login $GITHUB_REGISTRY -u $REGISTRY_USERNAME --password-stdin
-
-                            # Push versioned images
-                            docker push ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-user-service:${IMAGE_TAG}
-                            docker push ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-todo-service:${IMAGE_TAG}
-                            docker push ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-frontend:${IMAGE_TAG}
-
-                            # Push latest images
-                            docker push ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-user-service:latest
-                            docker push ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-todo-service:latest
-                            docker push ${GITHUB_REGISTRY}/${GITHUB_USER}/todo-app-frontend:latest
-                        '''
-                    }
+                script {
+                    echo "🚀 Pushing images to registry..."
+                    def images = env.BUILT_IMAGES.split(',')
+                    pushToRegistry([
+                        images: images,
+                        registry: env.GITHUB_REGISTRY,
+                        credentialsId: env.REGISTRY_CREDENTIALS
+                    ])
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                container('docker') {
-                    sh '''
-                        # Install kubectl in docker container
-                        apk add --no-cache curl
-                        curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
-                        chmod +x kubectl
-                        mv kubectl /usr/local/bin/
-
-                        # Test kubectl connectivity
-                        echo "Testing kubectl connectivity..."
-                        kubectl version --client
-                        kubectl get nodes || echo "No access to cluster - this is expected in Jenkins pod"
-
-                        # Apply K8s manifests
-                        kubectl apply -f k8s/namespace.yaml
-                        kubectl apply -f k8s/user-service-deployment.yaml
-                        kubectl apply -f k8s/user-service-service.yaml
-                        kubectl apply -f k8s/todo-service-deployment.yaml
-                        kubectl apply -f k8s/todo-service-service.yaml
-                        kubectl apply -f k8s/frontend-deployment.yaml
-                        kubectl apply -f k8s/frontend-service.yaml
-                        kubectl apply -f k8s/ingress.yaml
-
-                        # Restart deployments to pull latest images
-                        kubectl rollout restart deployment/user-service -n todo-app
-                        kubectl rollout restart deployment/todo-service -n todo-app
-                        kubectl rollout restart deployment/frontend -n todo-app
-
-                        # Wait for rollout to complete
-                        kubectl rollout status deployment/user-service -n todo-app
-                        kubectl rollout status deployment/todo-service -n todo-app
-                        kubectl rollout status deployment/frontend -n todo-app
-                    '''
+                script {
+                    echo "⚡ Deploying to Kubernetes..."
+                    deployToKubernetes([
+                        namespace: 'todo-app',
+                        manifestsPath: 'k8s'
+                    ])
                 }
             }
         }
@@ -164,15 +72,18 @@ pipeline {
 
     post {
         always {
-        echo 'Cleaning up the workspace...'
-        deleteDir()
+            echo 'Cleaning up the workspace...'
+            deleteDir()
         }
         success {
-            echo "🚀 Pipeline completed successfully!"
-            echo "✅ Application deployed to: http://todo-app.local"
+            script {
+                com.company.jenkins.Utils.notifyGitHub(this, 'success', 'Pipeline completed successfully!')
+            }
         }
         failure {
-            echo "❌ Pipeline failed!"
+            script {
+                com.company.jenkins.Utils.notifyGitHub(this, 'failure', 'Pipeline failed!')
+            }
         }
     }
 }
