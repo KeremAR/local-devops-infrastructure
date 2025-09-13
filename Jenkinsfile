@@ -10,19 +10,25 @@ pipeline {
                     jenkins: slave
                 spec:
                   serviceAccountName: jenkins
+                  volumes:
+                  - name: docker-cache
+                    persistentVolumeClaim:
+                      claimName: jenkins-docker-cache-pvc
                   containers:
                   - name: jnlp
                     image: jenkins/inbound-agent:latest
                     args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
+                    volumeMounts:
+                    - name: docker-cache
+                      mountPath: /home/jenkins/.docker
                   - name: docker
                     image: docker:20.10.16-dind
                     securityContext:
                       privileged: true
-                  - name: kubectl
-                    image: bitnami/kubectl:latest
-                    command: ['sleep']
-                    args: ['99d']
-                    tty: true
+                    volumeMounts:
+                    - name: docker-cache
+                      mountPath: /var/lib/docker
+
             '''
         }
     }
@@ -118,8 +124,19 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                container('kubectl') {
+                container('docker') {
                     sh '''
+                        # Install kubectl in docker container
+                        apk add --no-cache curl
+                        curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
+                        chmod +x kubectl
+                        mv kubectl /usr/local/bin/
+
+                        # Test kubectl connectivity
+                        echo "Testing kubectl connectivity..."
+                        kubectl version --client
+                        kubectl get nodes || echo "No access to cluster - this is expected in Jenkins pod"
+
                         # Apply K8s manifests
                         kubectl apply -f k8s/namespace.yaml
                         kubectl apply -f k8s/user-service-deployment.yaml
