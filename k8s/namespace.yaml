@@ -13,3 +13,12 @@ metadata:
   name: jenkins
   labels:
     name: jenkins
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sonarqube
+  labels:
+    name: sonarqube

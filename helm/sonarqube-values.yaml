@@ -1,0 +1,94 @@
+# SonarQube Helm Values - Düzeltilmiş ve Çalışır Versiyon
+# Chart: sonarqube/sonarqube
+
+# Community Edition ayarı
+community:
+  enabled: true
+
+replicaCount: 1
+
+image:
+  repository: sonarqube
+  tag: "10.3-community"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 9000
+  targetPort: 9000
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - name: sonarqube.local
+      path: /
+
+# Resource limits - VM için optimize edilmiş
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 250m
+    memory: 1Gi
+
+# Persistence - Düzeltilmiş ve basitleştirilmiş
+persistence:
+  enabled: true
+  storageClassName: "standard"  # Minikube default storage class
+  size: 3Gi  # VM için minimum boyut
+
+# PostgreSQL veritabanını chart ile birlikte kur
+postgresql:
+  enabled: true
+  postgresqlUsername: sonarqube
+  postgresqlDatabase: sonarqube
+  postgresqlPassword: sonarqube123
+  # PostgreSQL için de kalıcı depolama
+  persistence:
+    enabled: true
+    storageClassName: "standard"
+    size: 2Gi  # VM için yeterli
+
+# Gerekli sistem ayarlarını chart'ın kendisi yapsın
+initSysctl:
+  enabled: true
+
+# Admin şifresini başlangıçta belirle
+account:
+  adminPassword: "admin123"
+
+# Monitoring passcode (Helm chart gereksinimi)
+monitoringPasscode: "define_it"
+probes:
+  liveness:
+    # Liveness kontrolüne başlamadan önce 5 dakika (300sn) bekle
+    initialDelaySeconds: 300
+    # Her 30 saniyede bir kontrol et
+    periodSeconds: 30
+    # Cevap için 5 saniye bekle
+    timeoutSeconds: 5
+    # Pod'u yeniden başlatmadan önce 10 kez başarısız olmasına izin ver
+    failureThreshold: 10
+  readiness:
+    # Readiness kontrolüne başlamadan önce 2 dakika (120sn) bekle
+    initialDelaySeconds: 120
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 10
+  startup:
+    # Startup kontrolüne başlamadan önce 1 dakika (60sn) bekle
+    initialDelaySeconds: 60
+    # Pod'u fail saymadan önce 30 deneme hakkı ver (30*10sn = 5 dakika)
+    failureThreshold: 30
+    periodSeconds: 10
+# Node selector (isteğe bağlı)
+nodeSelector: {}
+
+# Tolerations (isteğe bağlı)
+tolerations: []
+
+# Affinity (isteğe bağlı)
+affinity: {}
