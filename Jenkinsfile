@@ -37,9 +37,8 @@ pipeline {
     environment {
         IMAGE_TAG = "${BUILD_NUMBER}"
         REGISTRY_CREDENTIALS = 'github-registry'
-        // SonarQube Environment Variables (assuming they are stored in Jenkins credentials)
+        // SonarQube Environment Variables
         SONAR_HOST_URL = 'http://sonarqube.local' // SonarQube server URL
-        SONAR_TOKEN = credentials('sonarqube-token') // SonarQube token credential
     }
 
     stages {
@@ -53,11 +52,13 @@ pipeline {
             steps {
                 script {
                     echo "🔎 Starting SonarQube analysis..."
-                    runSonarQubeAnalysis(
-                        projectKey: config.sonarProjectKey,
-                        sonarHostUrl: env.SONAR_HOST_URL,
-                        sonarToken: env.SONAR_TOKEN
-                    )
+                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                        runSonarQubeAnalysis(
+                            projectKey: config.sonarProjectKey,
+                            sonarHostUrl: env.SONAR_HOST_URL,
+                            sonarToken: env.SONAR_TOKEN
+                        )
+                    }
                 }
             }
         }
