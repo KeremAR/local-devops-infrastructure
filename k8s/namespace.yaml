@@ -15,10 +15,10 @@ metadata:
     name: jenkins
 
 ---
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: sonarqube
-  labels:
-    name: sonarqube
+# --------SonarQube Analysis (helm setup) Disabled for Now-----------------
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: sonarqube
+#   labels:
+#     name: sonarqube
