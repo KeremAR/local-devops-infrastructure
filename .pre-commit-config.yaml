@@ -31,12 +31,13 @@ repos:
   #       files: frontend/.*\.(js|jsx|ts|tsx)$
   #       pass_filenames: false
 
-  # Docker linting (disabled - too strict for development)
-  # - repo: https://github.com/hadolint/hadolint
-  #   rev: v2.12.0
-  #   hooks:
-  #     - id: hadolint-docker
-  #       args: [--ignore, DL3008, --ignore, DL3009]
+  # Docker linting with Hadolint
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3009, --ignore, DL3016, --ignore, DL3059]
+        files: \.Dockerfile(\..+)?$
 
   # YAML linting (disabled for now - too strict for K8s manifests)
   # - repo: https://github.com/adrienverge/yamllint
@@ -58,8 +59,8 @@ repos:
   # Test runner (pre-push)
   - repo: local
     hooks:
-      - id: run-tests
-        name: Run Backend Tests
+      - id: run-user-tests
+        name: Run User Service Tests
         entry: docker compose -f docker-compose.test.yml run --rm -T user-service-test
         language: system
         stages: [pre-push]

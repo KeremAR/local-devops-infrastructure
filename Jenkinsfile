@@ -26,6 +26,10 @@ def config = [
         'todo-service/Dockerfile.test',
         'frontend2/frontend/Dockerfile'
     ],
+
+    // Hadolint rules to ignore
+    hadolintIgnoreRules: ['DL3008', 'DL3009'],
+
     registry: 'ghcr.io',
     username: 'keremar',
     namespace: 'todo-app',
@@ -68,7 +72,10 @@ pipeline {
             steps {
                 script {
                      echo "🧹 Running Hadolint on all Dockerfiles..."
-                    runHadolint(dockerfiles: config.dockerfilesToHadolint)
+                    runHadolint(
+                        dockerfiles: config.dockerfilesToHadolint,
+                        ignoreRules: config.hadolintIgnoreRules
+                    )
 
                     echo "🔎 Starting SonarQube analysis (Plugin Method)..."
                     echo "----------------------SKIPPING FOR NOW----------------------"
