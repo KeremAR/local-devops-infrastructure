@@ -7,7 +7,7 @@ global:
   imageRegistry: ghcr.io/keremar
   imagePullSecrets:
     - name: github-registry-secret
-  namespace: todo-app-helm
+  namespace: todo-app
 
 # User Service Configuration
 userService:
