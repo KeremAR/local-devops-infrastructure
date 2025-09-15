@@ -25,7 +25,7 @@ spec:
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        - name: {{ .name }}
       {{- end }}
       containers:
       - name: {{ .Values.userService.name }}

@@ -1,73 +1,14 @@
-# jenkins-rbac.yaml - GÜNCELLENMİŞ VE TAM YETKİLİ HALİ
-
+# jenkins-rbac-cluster-admin.yaml
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: ClusterRoleBinding
 metadata:
-  # isim aynı kalabilir, kubectl mevcut olanı güncelleyecektir
-  name: jenkins-agent-manager
-rules:
-- apiGroups: [""] # 'core' API group
-  resources:
-  - pods
-  - pods/exec
-  - pods/log
-  - secrets
-  - events
-  - persistentvolumeclaims
-  - services
-  - namespaces
-  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
-
-- apiGroups: ["apps"] # 'apps' API group
-  resources:
-  - deployments
-  - replicasets
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-
-- apiGroups: ["networking.k8s.io"] # 'networking' API group
-  resources:
-  - ingresses
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: jenkins-agent-manager-binding
-  namespace: jenkins
+  # Eski binding'lerin üzerine yazması için farklı bir isim verelim
+  name: jenkins-cluster-admin-binding
 subjects:
 - kind: ServiceAccount
   name: jenkins
-  namespace: jenkins
+  namespace: jenkins # Jenkins ServiceAccount'unun bulunduğu namespace
 roleRef:
   kind: ClusterRole
-  name: jenkins-agent-manager
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: jenkins-agent-manager-binding-default-ns
-  namespace: default
-subjects:
-- kind: ServiceAccount
-  name: jenkins
-  namespace: jenkins
-roleRef:
-  kind: ClusterRole
-  name: jenkins-agent-manager
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: jenkins-admin-binding-for-todo-app
-  namespace: todo-app # DİKKAT: Yetkinin verileceği namespace
-subjects:
-- kind: ServiceAccount
-  name: jenkins # Yetkiyi alacak Service Account
-  namespace: jenkins # Service Account'un bulunduğu namespace
-roleRef:
-  kind: ClusterRole
-  name: admin # 'admin' ClusterRole'ü genellikle yeterli olur
+  name: cluster-admin # Kubernetes'in en yetkili, hazır gelen rolü
   apiGroup: rbac.authorization.k8s.io
