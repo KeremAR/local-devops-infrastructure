@@ -1,12 +1,14 @@
 # Default values for todo-app.
 # This is a YAML-formatted file.
-# Declare variables to be substituted into your templates.
+# Declare variables to be passed into your templates.
 
-# Global settings
 global:
   imageRegistry: ghcr.io/keremar
   imagePullSecrets:
-    - name: github-registry-secret
+    create: true
+    name: github-registry-secret
+    # The dockerconfigjson value will be injected at deploy time by Jenkins
+    dockerconfigjson: ""
   namespace: todo-app
 
 # User Service Configuration
