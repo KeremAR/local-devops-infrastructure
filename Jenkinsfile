@@ -134,7 +134,7 @@ pipeline {
                     echo "🛡️ Scanning built images for vulnerabilities..."
                     def allImages = env.BUILT_IMAGES.split(',')
                     // Filter out 'latest' tags to avoid scanning the same image twice
-                    def imagesToScan = allImages.findAll { it -> !it.endsWith(':latest') }
+                    def imagesToScan = allImages.findAll { image -> !image.endsWith(':latest') }
                     echo "Filtered images to scan: ${imagesToScan}"
 
                     runTrivyScan(
