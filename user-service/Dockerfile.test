@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Stage 2: Test runner
 FROM builder as test
 COPY ./user-service/ .
-CMD ["pytest"]
+CMD ["pytest", "--cov=.", "--cov-report=xml"]
