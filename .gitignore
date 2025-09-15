@@ -54,6 +54,6 @@ data/
 # Helm packages
 *.tgz
 
-# Kubernetes secrets (if any)
-*secret*.yaml
-*Secret*.yaml
+# # Kubernetes secrets (if any)
+# *secret*.yaml
+# *Secret*.yaml
