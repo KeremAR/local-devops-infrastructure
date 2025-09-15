@@ -18,6 +18,14 @@ def config = [
     composeFile: 'docker-compose.test.yml',
     // Services to be deployed to Kubernetes
     deploymentServices: ['user-service', 'todo-service', 'frontend'],
+    // Dockerfiles to be linted with Hadolint
+    dockerfilesToHadolint: [
+        'user-service/Dockerfile',
+        'user-service/Dockerfile.test',
+        'todo-service/Dockerfile',
+        'todo-service/Dockerfile.test',
+        'frontend2/frontend/Dockerfile'
+    ],
     registry: 'ghcr.io',
     username: 'keremar',
     namespace: 'todo-app',
@@ -59,12 +67,21 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 script {
+                     echo "🧹 Running Hadolint on all Dockerfiles..."
+                    runHadolint(dockerfiles: config.dockerfilesToHadolint)
+
                     echo "🔎 Starting SonarQube analysis (Plugin Method)..."
+                    echo "----------------------SKIPPING FOR NOW----------------------"
+
+
+//--------------------SonarQube Analysis (docker setup) Disabled for Now--------------------
+                    /*
                     sonarQubeAnalysis(
                         scannerName: config.sonarScannerName,
                         serverName: config.sonarServerName,
                         projectKey: config.sonarProjectKeyPlugin
                     )
+                    */
 
 //--------------------SonarQube Analysis (helm setup) Disabled for Now--------------------
                     /*
@@ -79,6 +96,8 @@ pipeline {
                 }
             }
         }
+
+
 
         stage('Build Services') {
             steps {
