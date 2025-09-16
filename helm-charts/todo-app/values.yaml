@@ -4,6 +4,7 @@
 
 global:
   imageRegistry: ghcr.io/keremar
+  image: {}
   imagePullSecrets:
     create: true
     name: github-registry-secret
