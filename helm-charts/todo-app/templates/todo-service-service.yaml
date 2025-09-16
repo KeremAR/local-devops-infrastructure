@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.todoService.name }}
-  namespace: {{ .Values.global.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Values.todoService.name }}
     app.kubernetes.io/name: {{ include "todo-app.name" . }}

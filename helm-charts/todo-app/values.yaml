@@ -9,7 +9,6 @@ global:
     name: github-registry-secret
     # The dockerconfigjson value will be injected at deploy time by Jenkins
     dockerconfigjson: ""
-  namespace: todo-app
 
 # User Service Configuration
 userService:
