@@ -29,7 +29,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Values.userService.name }}
-        image: {{ .Values.global.imageRegistry }}/{{ .Values.userService.image.repository }}:{{ .Values.userService.image.tag }}
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.userService.image.repository }}:{{ .Values.global.image.tag | default .Values.userService.image.tag }}
         imagePullPolicy: {{ .Values.userService.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.userService.service.targetPort }}

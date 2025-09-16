@@ -29,7 +29,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Values.todoService.name }}
-        image: {{ .Values.global.imageRegistry }}/{{ .Values.todoService.image.repository }}:{{ .Values.todoService.image.tag }}
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.todoService.image.repository }}:{{ .Values.global.image.tag | default .Values.todoService.image.tag }}
         imagePullPolicy: {{ .Values.todoService.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.todoService.service.targetPort }}
