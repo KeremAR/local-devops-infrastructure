@@ -36,7 +36,6 @@ def config = [
         'todo-service/Dockerfile.test',
         'frontend2/frontend/Dockerfile'
     ],
-
     hadolintIgnoreRules: ['DL3008', 'DL3009', 'DL3016', 'DL3059'],
 
 //--------------------Trivy Scan Disabled for Now--------------------
@@ -48,7 +47,7 @@ def config = [
 
     registry: 'ghcr.io',
     username: 'keremar',
-    namespace: 'todo-app',
+    namespace: 'todo-app', // Bu artık staging/prod için override edilecek
     manifestsPath: 'k8s',
     deploymentUrl: 'local-devops-infrastructure',
 
@@ -72,6 +71,8 @@ pipeline {
     }
 
     environment {
+        // BUILD_NUMBER, her build için Jenkins tarafından otomatik olarak artırılan bir ortam değişkenidir.
+        // Docker imajlarını benzersiz bir şekilde etiketlemek için kullanılır.
         IMAGE_TAG = "${BUILD_NUMBER}"
         REGISTRY_CREDENTIALS = 'github-registry'
 
@@ -80,6 +81,9 @@ pipeline {
     }
 
     stages {
+        // --- AŞAMA 1: DOĞRULAMA (VALIDATION) ---
+        // Bu aşamalar, production'a dağıtım yapılan tag'ler DIŞINDAKİ tüm branch'lerde (feature/*, master, vb.) çalışır.
+        // Amaç, kodu build etmek, analiz etmek ve test etmektir.
         stage('Checkout') {
             steps {
                 checkout scm
@@ -87,9 +91,12 @@ pipeline {
         }
 
         stage('Static Code Analysis') {
+            when {
+                not { tag 'v*' }
+            }
             steps {
                 script {
-                     echo "🧹 Running Hadolint on all Dockerfiles..."
+                    echo "🧹 Running Hadolint on all Dockerfiles..."
                     runHadolint(
                         dockerfiles: config.dockerfilesToHadolint,
                         ignoreRules: config.hadolintIgnoreRules
@@ -125,9 +132,12 @@ pipeline {
 
 
         stage('Build Services') {
+            when {
+                not { tag 'v*' }
+            }
             steps {
                 script {
-                    echo "🔨 Building all services in parallel..."
+                    echo "🔨 Building all services..."
                     def builtImages = buildAllServices(
                         services: config.services,
                         registry: config.registry,
@@ -167,6 +177,9 @@ pipeline {
         }
 
         stage('Unit Tests') {
+            when {
+                not { tag 'v*' }
+            }
             steps {
                 script {
                     echo "🧪 Running unit tests..."
@@ -185,7 +198,13 @@ pipeline {
             }
         }
 
+  // --- AŞAMA 2: ENTEGRASYON & STAGING DAĞITIMI ---
+        // Bu aşamalar, sadece 'master' dalına bir kod merge edildiğinde çalışır.
+        // Önce imajlar registry'ye push'lanır, ardından 'staging' ortamına dağıtılır.
         stage('Push to Registry') {
+            when {
+                branch 'master'
+            }
             steps {
                 script {
                     echo "🚀 Pushing images to registry..."
@@ -199,27 +218,50 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Staging') {
+            when {
+                branch 'master'
+            }
             steps {
                 script {
-                    echo "⚡ Deploying to Kubernetes with Helm..."
+                    echo "⚡ Deploying to Staging Environment..."
                     deployWithHelm(
-                        releaseName: config.helmReleaseName,
+                        releaseName: "${config.helmReleaseName}-staging",
                         chartPath: config.helmChartPath,
-                        namespace: config.namespace,
-                        valuesFile: config.helmValuesFile,
+                        namespace: 'staging',
+                        valuesFile: 'helm-charts/todo-app/values-staging.yaml',
                         imageTag: env.IMAGE_TAG,
                         dockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
                     )
+                }
+            }
+        }
 
-                    /*
-                    echo "⚡ Deploying to Kubernetes..."
-                    deployToKubernetes([
-                        namespace: config.namespace,
-                        manifestsPath: config.manifestsPath,
-                        services: config.deploymentServices
-                    ])
-                    */
+        // --- AŞAMA 3: PRODUCTION'A YÜKSELTME (PROMOTION) ---
+        // Bu aşama, sadece 'v' ile başlayan bir Git tag'i (örn: v1.0.0) push'landığında tetiklenir.
+        // Build ve test adımlarını atlar, direkt olarak production dağıtımını yapar.
+        stage('Deploy to Production') {
+            when {
+                tag 'v*'
+            }
+            steps {
+                script {
+                    // Production dağıtımı öncesi manuel onay istenir.
+                    input message: "Deploy to Production Environment? (Tag: ${env.TAG_NAME})", ok: 'Deploy'
+
+                    // Git tag'indeki 'v' önekini kaldırarak imaj tag'ini elde ediyoruz.
+                    // Örn: Git tag 'v1.2.3' ise, imaj tag'i '1.2.3' olur.
+                    def productionImageTag = env.TAG_NAME.replace('v', '')
+
+                    echo "⚡ Deploying tag '${productionImageTag}' to Production Environment..."
+                    deployWithHelm(
+                        releaseName: "${config.helmReleaseName}-prod",
+                        chartPath: config.helmChartPath,
+                        namespace: 'production',
+                        valuesFile: 'helm-charts/todo-app/values-prod.yaml',
+                        imageTag: productionImageTag,
+                        dockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
+                    )
                 }
             }
         }

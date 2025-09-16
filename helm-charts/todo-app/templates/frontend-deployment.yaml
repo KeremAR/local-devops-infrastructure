@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: frontend
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: {{ .Values.frontend.deployment.replicas }}
+  replicas: {{ .Values.global.replicaCount | default .Values.frontend.deployment.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.frontend.name }}
@@ -33,7 +33,7 @@ spec:
         imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.frontend.service.targetPort }}
-        {{- with .Values.resources }}
+        {{- with .Values.global.resources | default .Values.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}

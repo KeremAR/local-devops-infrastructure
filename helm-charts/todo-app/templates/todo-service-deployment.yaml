@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: todo-service
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: {{ .Values.todoService.deployment.replicas }}
+  replicas: {{ .Values.global.replicaCount | default .Values.todoService.deployment.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.todoService.name }}
@@ -54,7 +54,7 @@ spec:
         volumeMounts:
         - name: todo-data
           mountPath: {{ .Values.todoService.volumes.todoData.mountPath }}
-        {{- with .Values.resources }}
+        {{- with .Values.global.resources | default .Values.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
