@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: user-service
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: {{ .Values.userService.deployment.replicas }}
+  replicas: {{ .Values.global.replicaCount | default .Values.userService.deployment.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.userService.name }}
@@ -52,7 +52,7 @@ spec:
         volumeMounts:
         - name: user-data
           mountPath: {{ .Values.userService.volumes.userData.mountPath }}
-        {{- with .Values.resources }}
+        {{- with .Values.global.resources | default .Values.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}

@@ -1,0 +1,20 @@
+# -----------------------------------------------------------------------------
+# Production Ortamı İçin Özel Değerler
+# -----------------------------------------------------------------------------
+# Bu dosya, ana values.yaml dosyasındaki değerleri ezer (override).
+# Sadece production ortamına özel değişiklikleri buraya ekleyin.
+
+global:
+  environment: "production"
+  # Production ortamında yüksek erişilebilirlik (high availability) için
+  # her servisten en az 2 kopya çalıştır.
+  replicaCount: 2
+
+# Production ortamı için servislerin daha yüksek kaynak limitleri olmalıdır.
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
