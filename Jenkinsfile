@@ -224,10 +224,18 @@ pipeline {
             }
             steps {
                 script {
+                    /*
                     deployToStaging(
                         helmReleaseName: config.helmReleaseName,
                         helmChartPath: config.helmChartPath,
                         helmDockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
+                    )
+                    */
+                    deployToStagingWithKustomize(
+                        services: config.services,
+                        registry: config.registry,
+                        username: config.username,
+                        appName: config.appName
                     )
                 }
             }
@@ -257,12 +265,21 @@ pipeline {
             }
             steps {
                 script {
+                    /*
                     deployToProduction(
                         helmReleaseName: config.helmReleaseName,
                         helmChartPath: config.helmChartPath,
                         helmDockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId,
-                        services: config.services,
                         registryCredentialsId: env.REGISTRY_CREDENTIALS,
+                        services: config.services,
+                        registry: config.registry,
+                        username: config.username,
+                        appName: config.appName
+                    )
+                    */
+                    deployToProductionWithKustomize(
+                        registryCredentialsId: env.REGISTRY_CREDENTIALS,
+                        services: config.services,
                         registry: config.registry,
                         username: config.username,
                         appName: config.appName
