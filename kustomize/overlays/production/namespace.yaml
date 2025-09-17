@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    environment: production
+    tier: production
+  annotations:
+    backup.enabled: "true"
+    cost-center: production
+    deployment.environment: production
+    monitoring.enabled: "true"

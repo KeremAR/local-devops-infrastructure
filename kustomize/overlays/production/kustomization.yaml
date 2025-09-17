@@ -1,0 +1,133 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: todo-app-production
+
+# Base reference
+resources:
+- ../../base
+- namespace.yaml
+
+# Namespace for production
+namespace: production
+
+# Name prefix for production resources
+namePrefix: prod-
+
+# Common annotations for production
+commonAnnotations:
+  backup.enabled: "true"
+  cost-center: production
+  deployment.environment: production
+  monitoring.enabled: "true"
+
+# Patches for production-specific configurations
+patches:
+  # Remove namespace from resources (kustomize will apply production namespace)
+  - patch: |-
+      - op: remove
+        path: /metadata/namespace
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+
+  - patch: |-
+      - op: remove
+        path: /metadata/namespace
+    target:
+      version: v1
+      kind: Service
+
+  - patch: |-
+      - op: remove
+        path: /metadata/namespace
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+
+  # Scale up replicas for production (high availability)
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: user-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: todo-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: frontend
+
+  # Update SECRET_KEY for production environment
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: "production-secret-key-secure"
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: user-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: "production-secret-key-secure"
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: todo-service
+
+  # Update ingress host for production
+  - patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: "todo-app.local"
+      - op: add
+        path: /spec/tls
+        value:
+          - hosts:
+            - todo-app.local
+            secretName: todo-app-tls
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+      name: todo-app-ingress
+
+# Image tag updates for production (use specific version tags)
+images:
+- name: ghcr.io/keremar/todo-app-user-service
+  newTag: latest
+- name: ghcr.io/keremar/todo-app-todo-service
+  newTag: latest
+- name: ghcr.io/keremar/todo-app-frontend
+  newTag: latest
+
+labels:
+- includeSelectors: true
+  pairs:
+    environment: production
+    tier: production

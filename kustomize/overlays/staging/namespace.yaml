@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+  labels:
+    environment: staging
+    tier: non-production
+  annotations:
+    cost-center: development
+    deployment.environment: staging
