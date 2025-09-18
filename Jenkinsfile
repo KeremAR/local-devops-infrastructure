@@ -309,6 +309,7 @@ pipeline {
 
                    argoDeployProduction(config)
             }
+            }
         }
     }
 
