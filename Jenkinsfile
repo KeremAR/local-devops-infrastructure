@@ -29,6 +29,11 @@ def config = [
     helmValuesFile: 'helm-charts/todo-app/values.yaml', // Optional: Path to a custom values file
     helmDockerConfigJsonCredentialsId: 'github-registry-dockerconfig', // Jenkins credential ID for the docker config json
 
+    // ArgoCD Configuration
+    argoCdCredentialId: 'argocd-auth-token',
+    argoCdStagingAppName: 'staging-todo-app',
+    argoCdProdAppName: 'production-todo-app',
+
     dockerfilesToHadolint: [
         'user-service/Dockerfile',
         'user-service/Dockerfile.test',
@@ -231,13 +236,17 @@ pipeline {
                         helmDockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
                     )
                     */
-                    deployToStagingWithKustomize(
-                        services: config.services,
-                        registry: config.registry,
-                        username: config.username,
-                        appName: config.appName,
-                        dockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
-                    )
+
+
+                    // deployToStagingWithKustomize(
+                    //     services: config.services,
+                    //     registry: config.registry,
+                    //     username: config.username,
+                    //     appName: config.appName,
+                    //     dockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
+                    // )
+
+                    argoDeployStaging(config)
                 }
             }
         }
@@ -257,13 +266,17 @@ pipeline {
                         namespace: 'staging'
                     )
                     */
-                    cleanupKustomizeRelease(
-                        overlayPath: 'kustomize/overlays/staging',
-                        namespace: 'staging'
-                    )
-                }
+
+                    // cleanupKustomizeRelease(
+                    //     overlayPath: 'kustomize/overlays/staging',
+                    //     namespace: 'staging'
+                    // )
+
             }
         }
+
+        // --- AŞAMA 3: PRODUCTION'A YÜKSELTME (PROMOTION) ---
+        // Bu aşama, sadece 'v' ile başlayan bir Git tag'i (örn: v1.0.0) push'landığında tetiklenir.
 
         // Build ve test adımlarını atlar, direkt olarak production dağıtımını yapar.
         stage('Deploy to Production') {
@@ -284,15 +297,17 @@ pipeline {
                         appName: config.appName
                     )
                     */
-                    deployToProductionWithKustomize(
-                        registryCredentialsId: env.REGISTRY_CREDENTIALS,
-                        services: config.services,
-                        registry: config.registry,
-                        username: config.username,
-                        appName: config.appName,
-                        dockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
-                    )
-                }
+
+                    // deployToProductionWithKustomize(
+                    //     registryCredentialsId: env.REGISTRY_CREDENTIALS,
+                    //     services: config.services,
+                    //     registry: config.registry,
+                    //     username: config.username,
+                    //     appName: config.appName,
+                    //     dockerConfigJsonCredentialsId: config.helmDockerConfigJsonCredentialsId
+                    // )
+
+                   argoDeployProduction(config)
             }
         }
     }
