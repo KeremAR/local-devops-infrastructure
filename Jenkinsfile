@@ -260,6 +260,8 @@ pipeline {
             }
             steps {
                 script {
+                     echo "----------------------SKIPPING FOR NOW----------------------"
+
                     /*
                     cleanupHelmRelease(
                         releaseName: "${config.helmReleaseName}-staging",
