@@ -274,6 +274,7 @@ pipeline {
 
             }
         }
+        }
 
         // --- AŞAMA 3: PRODUCTION'A YÜKSELTME (PROMOTION) ---
         // Bu aşama, sadece 'v' ile başlayan bir Git tag'i (örn: v1.0.0) push'landığında tetiklenir.
@@ -308,10 +309,10 @@ pipeline {
                     // )
 
                    argoDeployProduction(config)
-            }
+                }
             }
         }
-    }
+
 
     post {
         always {
