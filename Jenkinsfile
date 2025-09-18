@@ -312,6 +312,7 @@ pipeline {
                 }
             }
         }
+    }
 
 
     post {
