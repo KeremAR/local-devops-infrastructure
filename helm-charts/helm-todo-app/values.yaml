@@ -6,8 +6,10 @@ global:
   imageRegistry: ghcr.io/keremar
   image: {}
   imagePullSecrets:
+    create: true
     name: github-registry-secret
-
+    # The dockerconfigjson value will be injected at deploy time by Jenkins
+    dockerconfigjson: ""
 
 # User Service Configuration
 userService:
