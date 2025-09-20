@@ -21,6 +21,18 @@ A comprehensive Todo application demonstrating modern DevOps practices. Features
 - [Development Workflow](#-development-workflow)
 - [Contributing](#-contributing)
 
+
+## 📋 Technology Summary
+
+This project can progress through 6 different stages:
+
+1. **🐳 Docker Compose** - Development environment
+2. **☸️ Kubernetes** - Container orchestration
+3. **⛵ Helm** - Package management + multi-environment
+4. **🔧 Kustomize** - Helm alternative, overlay pattern
+5. **🔄 Jenkins** - CI/CD pipeline
+6. **🏃‍♂️ ArgoCD** - GitOps deployment
+
 ## 🚀 Project Overview
 
 This project is a comprehensive infrastructure example that simulates real-world DevOps scenarios. It includes the following technologies and methodologies:
@@ -73,7 +85,24 @@ This project is a comprehensive infrastructure example that simulates real-world
 
 This project consists of three main repositories:
 
-### 📦 jenkins-shared-library2/ (This Repository)
+### 🏗️ local_devops_infrastructure/ (Main Application Repository)
+```
+├── 🐳 docker-compose.yml               # Development environment
+├── 🐳 docker-compose.test.yml          # Test environment
+├── 📂 frontend2/frontend/              # Frontend (React)
+├── 📂 user-service/                    # User service (FastAPI)
+├── 📂 todo-service/                    # Todo service (FastAPI)
+├── 📂 k8s/                             # Vanilla Kubernetes manifests
+├── 📂 helm-charts/                     # Helm chart definitions
+├── 📂 kustomize/                       # Kustomize overlays
+├── 📄 Jenkinsfile                      # CI/CD pipeline definition
+├── 📄 requirements.txt                 # Python dependencies
+├── 📄 jenkins-values.yaml              # Jenkins Helm values
+└── 📄 .pre-commit-config.yaml          # Code quality hooks
+└── 📄 sonarqube-values.yaml            # SonarQube Helm values
+```
+
+### 📦 jenkins-shared-library2/ (Jenkins Shared Library Repository)
 ```
 ├── 📂 vars/                            # Jenkins Shared Library functions
 │   ├── 📄 buildAllServices.groovy     # Parallel service build
@@ -86,21 +115,6 @@ This project consists of three main repositories:
 ├── 📂 examples/                        # Example pipeline files
     └── 📄 Jenkinsfile-simple          # Simple Jenkinsfile example
 
-```
-
-### 🏗️ local_devops_infrastructure/ (Main Application Repository)
-```
-├── 🐳 docker-compose.yml               # Development environment
-├── 🐳 docker-compose.test.yml          # Test environment
-├── 📂 user-service/                    # User service (FastAPI)
-├── 📂 todo-service/                    # Todo service (FastAPI)
-├── 📂 k8s/                             # Vanilla Kubernetes manifests
-├── 📂 helm-charts/                     # Helm chart definitions
-├── 📂 kustomize/                       # Kustomize overlays
-├── 📄 Jenkinsfile                      # CI/CD pipeline definition
-├── 📄 requirements.txt                 # Python dependencies
-├── 📄 jenkins-values.yaml              # Jenkins Helm values
-└── 📄 .pre-commit-config.yaml          # Code quality hooks
 ```
 
 ### 🔄 todo-app-gitops/ (GitOps Repository)
@@ -748,16 +762,7 @@ kubectl delete all --all -n production
 
 ---
 
-## 📋 Technology Summary
 
-This project can progress through 6 different stages:
-
-1. **🐳 Docker Compose** - Development environment
-2. **☸️ Kubernetes** - Container orchestration
-3. **⛵ Helm** - Package management + multi-environment
-4. **🔧 Kustomize** - Helm alternative, overlay pattern
-5. **🔄 Jenkins** - CI/CD pipeline
-6. **🏃‍♂️ ArgoCD** - GitOps deployment
 
 ## 🔄 Pipeline Workflow Summary
 
