@@ -7,32 +7,32 @@
 ![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-FF6B35)
 ![Jenkins](https://img.shields.io/badge/Jenkins-D33833?logo=jenkins&logoColor=white)
 
-Bu proje, modern DevOps pratiklerini gösteren kapsamlı bir Todo uygulamasıdır. Mikroservis mimarisi, multi-stage deployment, GitOps, CI/CD pipeline'ları ve multiple deployment stratejilerini içerir.
+A comprehensive Todo application demonstrating modern DevOps practices. Features microservice architecture, multi-stage deployment, GitOps, CI/CD pipelines, and multiple deployment strategies.
 
-## 📋 İçindekiler
+## 📋 Table of Contents
 
-- [Proje Genel Bakış](#-proje-genel-bakış)
-- [Mimari](#-mimari)
-- [Klasör Yapısı](#-klasör-yapısı)
-- [Hızlı Başlangıç](#-hızlı-başlangıç)
-- [Deployment Seçenekleri](#-deployment-seçenekleri)
-- [Çoklu Ortam Yönetimi](#-çoklu-ortam-yönetimi)
-- [CI/CD Pipeline](#-cicd-pipeline)
-- [GitOps ile Deployment](#-gitops-ile-deployment)
-- [İmperative Komutlar](#-imperative-komutlar)
-- [Troubleshooting](#-troubleshooting)
+- [Project Overview](#-project-overview)
+- [Architecture](#-architecture)
+- [Repository Structure](#-repository-structure)
+- [Step-by-Step Setup Guide](#-step-by-step-setup-guide)
+- [Deployment Strategy Comparison](#-deployment-strategy-comparison)
+- [Pipeline Workflow Summary](#-pipeline-workflow-summary)
+- [Configuration](#-configuration)
+- [Development Workflow](#-development-workflow)
+- [Contributing](#-contributing)
 
-## 🚀 Proje Genel Bakış
+## 🚀 Project Overview
 
-Bu proje, gerçek dünya DevOps senaryolarını simüle eden tam kapsamlı bir infrastrüktür örneğidir. Aşağıdaki teknolojileri ve metodolojileri içerir:
+This project is a comprehensive infrastructure example that simulates real-world DevOps scenarios. It includes the following technologies and methodologies:
 
-### 📱 Uygulama Bileşenleri
-- **Frontend**: React tabanlı web arayüzü
-- **User Service**: FastAPI ile kullanıcı yönetimi (auth, JWT)
-- **Todo Service**: FastAPI ile todo işlemleri
-- **Database**: SQLite (her servis kendi veritabanı)
+### 📱 Application Components
+- **Frontend**: React 19 + Vite + TailwindCSS web interface
+- **User Service**: FastAPI user management (auth, JWT, bcrypt)
+- **Todo Service**: FastAPI todo operations with user authorization
+- **Database**: SQLite (persistent volumes in K8s)
+- **Container Registry**: GitHub Container Registry (ghcr.io)
 
-### 🛠️ DevOps Araçları
+### 🛠️ DevOps Tools
 - **Container**: Docker & Docker Compose
 - **Orchestration**: Kubernetes (Minikube)
 - **Package Manager**: Helm Charts
@@ -42,7 +42,7 @@ Bu proje, gerçek dünya DevOps senaryolarını simüle eden tam kapsamlı bir i
 - **Code Quality**: Pre-commit hooks, Hadolint, SonarQube
 - **Security**: Trivy vulnerability scanning
 
-## 🏗️ Mimari
+## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -69,121 +69,162 @@ Bu proje, gerçek dünya DevOps senaryolarını simüle eden tam kapsamlı bir i
 └─────────────────────┴───────────────────────────────────────────┘
 ```
 
-## 📁 Klasör Yapısı
+## 📁 Repository Structure
 
-Bu proje üç ana bileşene ayrılmıştır:
+This project consists of three main repositories:
 
+### 📦 jenkins-shared-library2/ (This Repository)
 ```
-├── 📂 local_devops_infrastructure/     # Ana uygulama kodu ve infrastrüktür
-│   ├── 🐳 docker-compose.yml           # Geliştirme ortamı
-│   ├── 🐳 docker-compose.test.yml      # Test ortamı
-│   ├── 📂 user-service/                # Kullanıcı servisi
-│   ├── 📂 todo-service/                # Todo servisi
-│   ├── 📂 k8s/                         # Vanilla Kubernetes manifests
-│   ├── 📂 helm-charts/                 # Helm paket tanımları
-│   ├── 📂 kustomize/                   # Kustomize overlay'leri
-│   └── 📄 Jenkinsfile                  # CI/CD pipeline tanımı
 ├── 📂 vars/                            # Jenkins Shared Library functions
-├── 📂 todo-app-gitops/                 # GitOps manifests (ayrı repo)
-│   └── 📂 argocd-manifests/            # ArgoCD Application tanımları
-└── 📄 README.md                        # Bu dosya
+│   ├── 📄 buildAllServices.groovy     # Parallel service build
+│   ├── 📄 runUnitTests.groovy         # Test execution
+│   ├── 📄 argoDeployStaging.groovy    # ArgoCD staging deploy
+│   ├── 📄 argoDeployProduction.groovy # ArgoCD production deploy
+│   └── ... (other shared functions)
+├── 📂 src/com/company/jenkins/         # Utils and helper classes
+│   └── 📄 Utils.groovy                # Jenkins utility functions
+├── 📂 examples/                        # Example pipeline files
+    └── 📄 Jenkinsfile-simple          # Simple Jenkinsfile example
+
 ```
 
-## 🚀 Adım Adım Kurulum Rehberi
+### 🏗️ local_devops_infrastructure/ (Main Application Repository)
+```
+├── 🐳 docker-compose.yml               # Development environment
+├── 🐳 docker-compose.test.yml          # Test environment
+├── 📂 user-service/                    # User service (FastAPI)
+├── 📂 todo-service/                    # Todo service (FastAPI)
+├── 📂 k8s/                             # Vanilla Kubernetes manifests
+├── 📂 helm-charts/                     # Helm chart definitions
+├── 📂 kustomize/                       # Kustomize overlays
+├── 📄 Jenkinsfile                      # CI/CD pipeline definition
+├── 📄 requirements.txt                 # Python dependencies
+├── 📄 jenkins-values.yaml              # Jenkins Helm values
+└── 📄 .pre-commit-config.yaml          # Code quality hooks
+```
 
-Bu bölüm, projeyi farklı teknolojilerle adım adım nasıl kuracağınızı gösterir. Her aşama bir öncekini temel alır ve yeni teknolojiler ekler.
+### 🔄 todo-app-gitops/ (GitOps Repository)
+```
+└── 📂 argocd-manifests/                # ArgoCD Application definitions
+    ├── 📄 root-application.yaml       # App of Apps root
+    └── 📂 environments/                # Environment-specific apps
+        ├── 📄 staging.yaml            # Staging application
+        └── 📄 production.yaml         # Production application
+```
 
-### Ön Gereksinimler
+## 🚀 Step-by-Step Setup Guide
+
+This section shows how to set up the project step by step with different technologies. Each stage builds upon the previous one and adds new technologies.
+
+### Prerequisites
 
 - Docker & Docker Compose
 - Git
-- (Sonraki aşamalar için) Minikube, kubectl, Helm, ArgoCD CLI
+- (For later stages) Minikube, kubectl, Helm, ArgoCD CLI
 
 ---
 
-## 🐳 Aşama 1: Docker Compose ile Geliştirme
+## 🐳 Stage 1: Development with Docker Compose
 
-Bu en basit aşamadır. Hiçbir ek kurulum gerektirmez.
+This is the simplest stage. No additional setup required.
 
-### Kurulum
+### Setup
 
 ```bash
-# Projeyi klonlayın
+# Clone the project
 git clone <repo-url>
 cd jenkins-shared-library2/local_devops_infrastructure
 
-# Uygulamayı başlatın
+# Start the application
 docker compose up -d
 
-# Logları izleyin
+# Follow logs
 docker compose logs -f
 
-# Durumunu kontrol edin
+# Check status
 docker compose ps
 ```
 
-### Test Ortamı
+### Test Environment
 
 ```bash
-# Test servislerini çalıştırın
+# Run test services
 docker compose -f docker-compose.test.yml up --build
 
-# Testleri takip edin
+# Follow tests
 docker compose -f docker-compose.test.yml logs -f
 
-# Test imajlarını temizleyin
+# Clean test images
 docker compose -f docker-compose.test.yml down --rmi all
 ```
 
-### Erişim URL'leri
+### Access URLs
 - Frontend: http://localhost:3000
 - User Service: http://localhost:8001
 - Todo Service: http://localhost:8002
-- API Docs: http://localhost:8001/docs ve http://localhost:8002/docs
+- API Docs: http://localhost:8001/docs and http://localhost:8002/docs
 
-### Temizlik
+### Service Architecture
+
+#### User Service (Port 8001)
+- **Endpoints:** `/register`, `/login`, `/users/{id}`, `/admin/users`
+- **Features:** JWT authentication, bcrypt password hashing, SQLite database
+- **Health Check:** `/health`
+
+#### Todo Service (Port 8002)  
+- **Endpoints:** `/todos` (CRUD), `/admin/todos`
+- **Features:** JWT validation, user-specific todos, SQLite database
+- **Dependencies:** User Service for authentication
+- **Health Check:** `/health`
+
+#### Frontend (Port 3000)
+- **Technology:** React 19 + Vite + TailwindCSS
+- **Features:** Modern UI, responsive design, API integration
+- **Build:** Production-optimized with Vite
+
+### Cleanup
 
 ```bash
-# Servisleri durdurun
+# Stop services
 docker compose down
 
-# Volume'leri de temizleyin
+# Clean volumes as well
 docker compose down -v
 
-# İmajları da silin
+# Remove images too
 docker compose down --rmi all
 ```
 
-## ☸️ Aşama 2: Kubernetes ile Deployment
+## ☸️ Stage 2: Deployment with Kubernetes
 
-Bu aşamada Minikube kullanarak Kubernetes'e geçiş yapacağız.
+In this stage, we'll transition to Kubernetes using Minikube.
 
-### Ön Gereksinimler
+### Prerequisites
 ```bash
-# Minikube kurulumu (henüz yoksa)
+# Install Minikube (if not already installed)
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 sudo install minikube-linux-amd64 /usr/local/bin/minikube
 ```
 
-### 1. Minikube Kurulumu
+### 1. Minikube Setup
 
 ```bash
-# Minikube'ı başlatın
+# Start Minikube
 minikube start
 
-# Ingress addon'unu etkinleştirin (Nginx Ingress Controller için gerekli)
+# Enable ingress addon (required for Nginx Ingress Controller)
 minikube addons enable ingress
 
-# Docker environment'ı minikube'a yönlendirin
-# Bu sayede Docker build'leri doğrudan Minikube'da çalışır
+# Point Docker environment to Minikube
+# This allows Docker builds to run directly in Minikube
 eval $(minikube -p minikube docker-env)
 ```
 
-### 2. Registry Secret Oluşturma
+### 2. Registry Secret Creation
 
 ```bash
-# GitHub Container Registry için secret oluşturun
-# Bu secret, private imajları çekmek için gereklidir
+# Create secret for GitHub Container Registry
+# This secret is required to pull private images
 kubectl create secret docker-registry github-registry-secret \
   --docker-server=ghcr.io \
   --docker-username=<GITHUB_USERNAME> \
@@ -191,72 +232,72 @@ kubectl create secret docker-registry github-registry-secret \
   -n todo-app
 ```
 
-**Not**: GitHub Token'ınızın `packages` scope'una sahip olması gerekir.
+**Note**: Your GitHub Token must have `packages` scope.
 
 ### 3. Kubernetes Manifests Deployment
 
 ```bash
-# Tüm Kubernetes manifest'lerini uygulayın
+# Apply all Kubernetes manifests
 kubectl apply -f k8s/
 
-# Pod'ların durumunu kontrol edin
+# Check pod status
 kubectl get pods -n todo-app
 
-# Servislerin durumunu kontrol edin
+# Check service status
 kubectl get services -n todo-app
 ```
 
-**Önemli Not**: Eğer yeni namespace'ler ekliyorsanız, `k8s/jenkins-rbac.yaml` dosyasında ilgili namespace'ler için rolebinding eklemeniz gerekir. Aksi takdirde Jenkins agent'ları o namespace'lere erişemez.
+**Important Note**: If you're adding new namespaces, you need to add rolebindings for those namespaces in `k8s/jenkins-rbac.yaml`. Otherwise, Jenkins agents cannot access those namespaces.
 
-### 4. Hosts Dosyası Konfigürasyonu
+### 4. Hosts File Configuration
 
 ```bash
-# Minikube IP'sini alın
+# Get Minikube IP
 MINIKUBE_IP=$(minikube ip)
 
-# Hosts dosyasına ekleyin
+# Add to hosts file
 echo "$MINIKUBE_IP todo-app.local" | sudo tee -a /etc/hosts
 ```
 
-### 5. Erişim
+### 5. Access
 
-Uygulamaya erişim: http://todo-app.local
+Application access: http://todo-app.local
 
 ### Troubleshooting
 
 ```bash
-# Pod loglarını inceleyin
+# Check pod logs
 kubectl logs -f deployment/user-service -n todo-app
 kubectl logs -f deployment/todo-service -n todo-app
 kubectl logs -f deployment/frontend -n todo-app
 
-# Ingress durumunu kontrol edin
+# Check ingress status
 kubectl get ingress -n todo-app
 kubectl describe ingress todo-app-ingress -n todo-app
 ```
 
 ---
 
-## ⛵ Aşama 3: Helm ile Package Management
+## ⛵ Stage 3: Package Management with Helm
 
-Bu aşamada Helm kullanarak deployment'ı paketleyeceğiz ve multi-environment desteği ekleyeceğiz.
+In this stage, we'll package the deployment using Helm and add multi-environment support.
 
-### 1. Helm Kurulumu
+### 1. Helm Installation
 
 ```bash
-# Helm'i kurun (henüz yoksa)
+# Install Helm (if not already installed)
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
-### 2. Registry Secrets (Helm için)
+### 2. Registry Secrets (For Helm)
 
-Helm değerlerinde daha karmaşık secret management gerekir:
+Helm values require more complex secret management:
 
 ```bash
-# Docker config'ini base64 formatında alın
+# Get Docker config in base64 format
 cat ~/.docker/config.json | base64 | tr -d '\n'
 
-# Bu değeri Jenkins'te `github-registry-dockerconfig` credential'ı olarak kaydedin
+# Save this value as `github-registry-dockerconfig` credential in Jenkins
 ```
 
 ### 3. Development Environment
@@ -272,14 +313,14 @@ helm upgrade --install todo-app helm-charts/helm-todo-app \
 ### 4. Staging Environment
 
 ```bash
-# Staging namespace için secret oluşturun
+# Create secret for staging namespace
 kubectl create secret docker-registry github-registry-secret \
   --namespace=staging \
   --docker-server=ghcr.io \
   --docker-username=<GITHUB_USERNAME> \
   --docker-password=<GITHUB_TOKEN>
 
-# Staging environment'ı deploy edin
+# Deploy staging environment
 helm upgrade --install todo-app-staging helm-charts/helm-todo-app \
   --namespace staging \
   --create-namespace \
@@ -290,101 +331,101 @@ helm upgrade --install todo-app-staging helm-charts/helm-todo-app \
 ### 5. Production Environment
 
 ```bash
-# Production namespace için secret oluşturun
+# Create secret for production namespace
 kubectl create secret docker-registry github-registry-secret \
   --namespace=production \
   --docker-server=ghcr.io \
   --docker-username=<GITHUB_USERNAME> \
   --docker-password=<GITHUB_TOKEN>
 
-# Production environment'ı deploy edin
+# Deploy production environment
 helm upgrade --install todo-app-prod helm-charts/helm-todo-app \
   --namespace production \
   --create-namespace \
   -f helm-charts/helm-todo-app/values-prod.yaml \
   --wait
 
-# Production hosts entry'si ekleyin
+# Add production hosts entry
 echo "$(minikube ip) prod.todo-app.local" | sudo tee -a /etc/hosts
 ```
 
 ### 6. Helm Commands
 
 ```bash
-# Tüm release'leri listeleyin
+# List all releases
 helm list --all-namespaces
 
-# Release durumunu kontrol edin
+# Check release status
 helm status todo-app -n todo-app
 
-# Template'i test edin (debug için)
+# Test template (for debugging)
 helm template todo-app helm-charts/helm-todo-app
 
-# Release'i kaldırın
+# Remove release
 helm uninstall todo-app -n todo-app
 ```
 
 ---
 
-## 🔧 Aşama 4: Kustomize ile Configuration Management
+## 🔧 Stage 4: Configuration Management with Kustomize
 
-Kustomize, Helm'e alternatif olarak kullanılabilir. Base konfigürasyon + overlay pattern'i kullanır.
+Kustomize can be used as an alternative to Helm. It uses base configuration + overlay pattern.
 
-### 1. Kustomize Kurulumu
+### 1. Kustomize Installation
 
 ```bash
-# Kustomize'ı kurun
+# Install Kustomize
 sudo snap install kustomize
 ```
 
 ### 2. Base Deployment
 
 ```bash
-# Base konfigürasyonu deploy edin
+# Deploy base configuration
 kubectl apply -k kustomize/base/
 
-# Kaynakları kontrol edin
+# Check resources
 kubectl get all -n todo-app
 ```
 
 ### 3. Staging Overlay
 
 ```bash
-# Staging overlay'ini deploy edin
+# Deploy staging overlay
 kubectl apply -k kustomize/overlays/staging/
 
-# Staging kaynaklarını kontrol edin
+# Check staging resources
 kubectl get all -n staging
 ```
 
 ### 4. Production Overlay
 
 ```bash
-# Production overlay'ini deploy edin
+# Deploy production overlay
 kubectl apply -k kustomize/overlays/production/
 
-# Production kaynaklarını kontrol edin
+# Check production resources
 kubectl get all -n production
 ```
 
 ### 5. Kustomize Commands
 
 ```bash
-# Build output'u görmek için (apply etmeden)
+# View build output (without applying)
 kustomize build kustomize/base/
 kustomize build kustomize/overlays/staging/
 
-# Staging'i kaldırın
+# Remove staging
 kubectl delete -k kustomize/overlays/staging/
 
-# Production'ı kaldırın
+# Remove production
 kubectl delete -k kustomize/overlays/production/
 ```
 
-**Not**: Kustomize kullanırken secret'ları manuel olarak oluşturmanız gerekir:
+**Note**: When using Kustomize, you need to manually create secrets:
 
 ```bash
-# Her namespace için secret oluşturun
+# Create secret for each namespace
 kubectl create secret docker-registry github-registry-secret \
   --namespace=staging \
   --docker-server=ghcr.io \
@@ -394,86 +435,86 @@ kubectl create secret docker-registry github-registry-secret \
 
 ---
 
-## 🔄 Aşama 5: Jenkins CI/CD Pipeline
+## 🔄 Stage 5: Jenkins CI/CD Pipeline
 
-Bu aşamada Jenkins ile otomatik CI/CD pipeline kuracağız.
+In this stage, we'll set up automatic CI/CD pipeline with Jenkins.
 
-### 1. Jenkins Kurulumu ve Konfigürasyon
+### 1. Jenkins Installation and Configuration
 
-Jenkins'i Helm ile kurun:
+Install Jenkins with Helm:
 
 ```bash
-# Jenkins namespace oluşturun
+# Create Jenkins namespace
 kubectl create namespace jenkins
 
-# Jenkins admin secret'ını oluşturun
+# Create Jenkins admin secret
 kubectl create secret generic jenkins-admin-secret -n jenkins \
   --from-literal=jenkins-admin-user='admin' \
-  --from-literal=jenkins-admin-password='SizinGucluSifreniz123!'
+  --from-literal=jenkins-admin-password='YourStrongPassword123!'
 
-# Jenkins'i Helm ile kurun
+# Install Jenkins with Helm
 helm repo add jenkins https://charts.jenkins.io
 helm repo update
 helm install jenkins jenkins/jenkins -f jenkins-values.yaml -n jenkins --create-namespace
 
-# Jenkins service'ine JNLP portu ekleyin (agent connection için gerekli)
+# Add JNLP port to Jenkins service (required for agent connection)
 kubectl edit svc jenkins -n jenkins
-# Aşağıdaki portu ekleyin:
+# Add the following port:
 #   - name: jnlp       
 #     port: 50000
 #     protocol: TCP
 #     targetPort: 50000
 ```
 
-### 2. Jenkins Plugin'leri
+### 2. Jenkins Plugins
 
-Jenkins'te aşağıdaki plugin'leri kurun:
-- **Kubernetes Credentials Provider** (Kubernetes secret'ları kullanmak için)
-- **Basic Branch Build Strategies** (Tag build'leri için gerekli)
-- **SonarQube Scanner** (kod kalitesi analizi için)
+Install the following plugins in Jenkins:
+- **Kubernetes Credentials Provider** (for using Kubernetes secrets)
+- **Basic Branch Build Strategies** (required for tag builds)
+- **SonarQube Scanner** (for code quality analysis)
 
-### 2.5. SonarQube Kurulumu (İsteğe Bağlı)
+### 2.5. SonarQube Setup (Optional)
 
-SonarQube'u iki şekilde kurabilirsiniz:
+You can install SonarQube in two ways:
 
-#### Option A: Docker ile SonarQube
+#### Option A: SonarQube with Docker
 
 ```bash
-# SonarQube'u Docker ile çalıştırın
+# Run SonarQube with Docker
 docker pull sonarqube
 docker run -d --name sonarqube -p 9000:9000 sonarqube
 
-# SonarQube'a erişin: http://192.168.49.1:9000
+# Access SonarQube: http://192.168.49.1:9000
 # Default: admin/admin
 ```
 
-**SonarQube Konfigürasyonu:**
+**SonarQube Configuration:**
 
-1. SonarQube'a login olun
-2. Yeni proje oluşturun:
+1. Login to SonarQube
+2. Create new project:
    - Project key: `Local-DevOps-Infrastructure`
    - Display name: `Local DevOps Infrastructure`
-3. Token oluşturun: Administration > Security > Users > Tokens
-4. Webhook oluşturun: Administration > Configuration > Webhooks
+3. Create token: Administration > Security > Users > Tokens
+4. Create webhook: Administration > Configuration > Webhooks
    - URL: `http://jenkins.jenkins.svc.cluster.local:8080/sonarqube-webhook/`
 
-#### Option B: Helm ile SonarQube
+#### Option B: SonarQube with Helm
 
 ```bash
-# SonarQube Helm repository ekleyin
+# Add SonarQube Helm repository
 helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube
 helm repo update
 
-# SonarQube'u kurun
+# Install SonarQube
 helm install sonarqube sonarqube/sonarqube -f sonarqube-values.yaml -n sonarqube --create-namespace
 
-# Hosts dosyasına ekleyin
+# Add to hosts file
 echo "$(minikube ip) sonarqube.local" | sudo tee -a /etc/hosts
 
-# SonarQube'a erişin: http://sonarqube.local
+# Access SonarQube: http://sonarqube.local
 ```
 
-**Jenkins SonarQube Entegrasyonu:**
+**Jenkins SonarQube Integration:**
 
 1. **Manage Jenkins > Tools > SonarQube Scanner installations:**
    - Name: `SonarQube-Scanner`
@@ -481,30 +522,30 @@ echo "$(minikube ip) sonarqube.local" | sudo tee -a /etc/hosts
 
 2. **Manage Jenkins > Configure System > SonarQube servers:**
    - Name: `sq1`
-   - Server URL: `http://sonarqube.local` (Helm) veya `http://192.168.49.1:9000` (Docker)
-   - Authentication token: SonarQube'dan aldığınız token
+   - Server URL: `http://sonarqube.local` (Helm) or `http://192.168.49.1:9000` (Docker)
+   - Authentication token: Token obtained from SonarQube
 
 3. **Credentials > Global > Add Credential:**
    - Kind: Secret text
    - ID: `sonarqube-token`
-   - Secret: SonarQube token değeri
+   - Secret: SonarQube token value
 
 ### 3. Jenkins Credentials
 
-Jenkins > Manage Jenkins > Credentials'da aşağıdakileri ekleyin:
+Add the following in Jenkins > Manage Jenkins > Credentials:
 
 ```bash
-# GitHub registry için (ID: github-registry)
+# For GitHub registry (ID: github-registry)
 # Username: <GITHUB_USERNAME>
 # Password: <GITHUB_TOKEN> (packages scope)
 
-# GitHub webhook için (ID: github-webhook)  
+# For GitHub webhook (ID: github-webhook)  
 # Username: <GITHUB_USERNAME>
 # Password: <GITHUB_TOKEN> (repo, hook scopes)
 
-# Docker config için (ID: github-registry-dockerconfig)
+# For Docker config (ID: github-registry-dockerconfig)
 cat ~/.docker/config.json | base64 | tr -d '\n'
-# Bu output'u "Secret text" olarak kaydedin
+# Save this output as "Secret text"
 ```
 
 ### 4. Jenkins Global Configuration
@@ -522,7 +563,7 @@ Project Repository: <YOUR_SHARED_LIBRARY_REPO>
 # Global properties (Environment variables)
 ARGOCD_SERVER: argocd.todo-app.local
 
-# SonarQube Servers (eğer kullanıyorsanız)
+# SonarQube Servers (if using)
 Name: sq1
 Server URL: http://sonarqube.local
 ```
@@ -545,19 +586,18 @@ Kubernetes Namespace: jenkins
 Credentials: kubernetes service account
 ```
 
-**Not**: Eski versiyonlarda kubeconfig dosyası gerekebilir:
 
 ```bash
-# Kubeconfig dosyası oluşturun (gerekirse)
+# Create kubeconfig file (if needed)
 kubectl config view --raw --minify > kubeconfig.yaml
 
-# Jenkins'te "Secret file" olarak ekleyin
-# Ancak modern Kubernetes plugin'i ile bu gerekli değildir
+# Add as "Secret file" in Jenkins
+# However, this is not needed with modern Kubernetes plugin
 ```
 
-### 6. Pipeline Job Oluşturma
+### 6. Pipeline Job Creation
 
-Jenkins'te Multibranch Pipeline job oluşturun:
+Create a Multibranch Pipeline job in Jenkins:
 
 ```bash
 # Branch Sources
@@ -580,66 +620,66 @@ Tags: Tags matching a pattern v*
 
 ---
 
-## 🏃‍♂️ Aşama 6: GitOps ile ArgoCD
+## 🏃‍♂️ Stage 6: GitOps with ArgoCD
 
-Bu son aşamada GitOps workflow'unu ArgoCD ile kuracağız.
+In this final stage, we'll set up GitOps workflow with ArgoCD.
 
-### 1. ArgoCD Kurulumu
+### 1. ArgoCD Installation
 
 ```bash
-# ArgoCD namespace oluşturun
+# Create ArgoCD namespace
 kubectl create namespace argocd
 
-# ArgoCD'yi kurun
+# Install ArgoCD
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-# ArgoCD ingress'ini kurun
+# Install ArgoCD ingress
 kubectl apply -f k8s/argocd-ingress.yaml
 
-# Hosts dosyasına ekleyin
+# Add to hosts file
 echo "$(minikube ip) argocd.todo-app.local" | sudo tee -a /etc/hosts
 ```
 
-### 2. ArgoCD Admin Erişimi
+### 2. ArgoCD Admin Access
 
 ```bash
-# Admin şifresini alın
+# Get admin password
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
-# ArgoCD'ye web'den erişin: https://argocd.todo-app.local
+# Access ArgoCD via web: https://argocd.todo-app.local
 # Username: admin
-# Password: yukarıda aldığınız şifre
+# Password: password obtained above
 ```
 
-### 3. ArgoCD CLI Kurulumu
+### 3. ArgoCD CLI Installation
 
 ```bash
-# ArgoCD CLI'yi indirin
+# Download ArgoCD CLI
 curl -SL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
 sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 rm argocd-linux-amd64
 
-# ArgoCD'ye login olun
+# Login to ArgoCD
 argocd login argocd.todo-app.local --insecure --grpc-web
 
-# API token oluşturun (Jenkins için gerekli)
+# Create API token (required for Jenkins)
 kubectl patch configmap/argocd-cm --type merge -p '{"data":{"accounts.admin":"apiKey"}}' -n argocd
 argocd account generate-token
 ```
 
 ### 4. GitOps Repository Secrets
 
-ArgoCD'nin imajları çekebilmesi için secret'ları oluşturun:
+Create secrets for ArgoCD to pull images:
 
 ```bash
-# Staging için
+# For staging
 kubectl create secret docker-registry github-registry-secret \
   --namespace=staging \
   --docker-server=ghcr.io \
   --docker-username=<GITHUB_USERNAME> \
   --docker-password=<GITHUB_TOKEN>
 
-# Production için
+# For production
 kubectl create secret docker-registry github-registry-secret \
   --namespace=production \
   --docker-server=ghcr.io \
@@ -647,11 +687,11 @@ kubectl create secret docker-registry github-registry-secret \
   --docker-password=<GITHUB_TOKEN>
 ```
 
-**Önemli Not**: Helm chart'ınızda imagePullSecret oluşturma özelliği kapalı olmalıdır çünkü ArgoCD'nin Jenkins credential'larına erişimi yoktur. Secret'ları manuel olarak oluşturduk.
+**Important Note**: The imagePullSecret creation feature in your Helm chart should be disabled because ArgoCD doesn't have access to Jenkins credentials. We created the secrets manually.
 
 ### 5. Jenkins ArgoCD Credentials
 
-Jenkins'te ArgoCD erişimi için credential'lar ekleyin:
+Add credentials for ArgoCD access in Jenkins:
 
 ```bash
 # Credentials > Global > Add Credential
@@ -662,186 +702,205 @@ Jenkins'te ArgoCD erişimi için credential'lar ekleyin:
 ### 6. Root Application Deployment
 
 ```bash
-# GitOps root application'ını deploy edin
+# Deploy GitOps root application
 kubectl apply -f todo-app-gitops/argocd-manifests/root-application.yaml -n argocd
 ```
 
-Bu komut App of Apps pattern'ini başlatır ve staging/production application'larını otomatik olarak oluşturur.
+This command starts the App of Apps pattern and automatically creates staging/production applications.
 
 ### 7. Pipeline Test
 
-Artık tam GitOps workflow'u test edebilirsiniz:
+Now you can test the complete GitOps workflow:
 
 ```bash
-# Feature branch oluşturun
+# Create feature branch
 git checkout -b feature/test-pipeline
 git push origin feature/test-pipeline
 
-# Jenkins pipeline'ı build + test yapacak
+# Jenkins will run build + test
 
-# Master'a merge edin
+# Merge to master
 git checkout master
 git merge feature/test-pipeline
 git push origin master
 
-# Jenkins staging'e deploy edecek
+# Jenkins will deploy to staging
 
-# Production tag'i oluşturun
+# Create production tag
 git tag v1.0.0
 git push origin v1.0.0
 
-# Jenkins production'a deploy edecek
+# Jenkins will deploy to production
 ```
 
-### 8. ArgoCD Application Temizleme (gerekirse)
+### 8. ArgoCD Application Cleanup (if needed)
 
 ```bash
-# Tüm application'ları temizlemek için finalizer'ları kaldırın
+# Remove finalizers to clean all applications
 kubectl patch application staging-todo-app -n argocd -p '{"metadata":{"finalizers":null}}' --type=merge
 kubectl patch application production-todo-app -n argocd -p '{"metadata":{"finalizers":null}}' --type=merge
 kubectl patch application root-app -n argocd -p '{"metadata":{"finalizers":null}}' --type=merge
 
-# Namespace'leri temizleyin
+# Clean namespaces
 kubectl delete all --all -n staging
 kubectl delete all --all -n production
 ```
 
 ---
 
-## 📋 Teknoloji Özeti
+## 📋 Technology Summary
 
-Bu proje 6 farklı aşamada ilerleyebilir:
+This project can progress through 6 different stages:
 
-1. **🐳 Docker Compose** - Geliştirme ortamı
+1. **🐳 Docker Compose** - Development environment
 2. **☸️ Kubernetes** - Container orchestration
 3. **⛵ Helm** - Package management + multi-environment
-4. **🔧 Kustomize** - Helm alternatifi, overlay pattern
+4. **🔧 Kustomize** - Helm alternative, overlay pattern
 5. **🔄 Jenkins** - CI/CD pipeline
 6. **🏃‍♂️ ArgoCD** - GitOps deployment
 
-## 🔄 Pipeline Workflow Özeti
+## 🔄 Pipeline Workflow Summary
 
 ### Shared Library Functions
-- `buildAllServices()` - Paralel servis build'i
-- `runUnitTests()` - Paralel test çalıştırma
-- `pushToRegistry()` - Docker registry'ye push
+- `buildAllServices()` - Parallel service builds
+- `runUnitTests()` - Parallel test execution
+- `pushToRegistry()` - Docker registry push
 - `deployWithHelm()` - Helm deployment
 - `argoDeployStaging()` - ArgoCD staging sync
 - `argoDeployProduction()` - ArgoCD production sync
 - `runHadolint()` - Dockerfile linting
-- `runTrivyScan()` - Güvenlik taraması
+- `runTrivyScan()` - Security scanning
 
-### Pipeline Akışı
+### Pipeline Flow
 1. **Feature Branch** → Build + Test + Analysis
 2. **Master Branch** → Registry Push + Staging Deploy
 3. **Git Tag (v*)** → Production Deploy
 
-## 🔧 Konfigürasyon
+### Pipeline Configuration
+
+The pipeline is fully configurable via the `config` map in `Jenkinsfile`:
+
+```groovy
+def config = [
+    appName: 'todo-app',
+    services: [
+        [name: 'user-service', dockerfile: 'user-service/Dockerfile'],
+        [name: 'todo-service', dockerfile: 'todo-service/Dockerfile'],
+        [name: 'frontend', dockerfile: 'frontend2/frontend/Dockerfile', context: 'frontend2/frontend/']
+    ],
+    // Registry and deployment settings
+    registry: 'ghcr.io',
+    username: 'keremar',
+    // Choose your deployment strategy
+    // helmReleaseName: 'todo-app',  // For Helm
+    // argoCdStagingAppName: 'staging-todo-app',  // For GitOps
+]
+```
+
+## 📊 Deployment Strategy Comparison
+
+| Strategy | Best For | Pros | Cons |
+|----------|----------|------|------|
+| **Docker Compose** | Local development, testing | Quick setup, simple | Not production-ready |
+| **K8s Manifests** | Learning, simple deployments | Full control, transparent | Verbose, hard to manage |
+| **Helm** | Complex apps, multi-env | Templating, packaging | Learning curve, complexity |
+| **Kustomize** | Environment variants | Declarative, patch-based | Limited templating |
+| **GitOps/ArgoCD** | Production, compliance | Git-based, audit trail | Complex setup, git dependency |
+
+## 🔧 Configuration
 
 ### Pre-commit Hooks
 ```bash
-# Pre-commit'i kurun
+# Install pre-commit
 pip install pre-commit
 
-# Hook'ları aktive edin
+# Activate hooks
 pre-commit install
 
-# Tüm dosyalarda çalıştırın
+# Run on all files
 pre-commit run --all-files
 ```
 
 ### Jenkins Credentials
-Aşağıdaki credential'ları Jenkins'te tanımlamanız gerekir:
+You need to define the following credentials in Jenkins:
 
-- `github-registry`: GitHub Container Registry için
-- `github-webhook`: GitHub webhook için (repo + hook scopes)
-- `argocd-username`: ArgoCD kullanıcı adı
-- `argocd-password`: ArgoCD şifresi
-- `sonarqube-token`: SonarQube token'ı (kullanıyorsanız)
+- `github-registry`: For GitHub Container Registry
+- `github-webhook`: For GitHub webhook (repo + hook scopes)
+- `argocd-username`: ArgoCD username
+- `argocd-password`: ArgoCD password
+- `sonarqube-token`: SonarQube token (if using)
 
 ### Jenkins Global Properties
-Jenkins'te aşağıdaki environment variable'ı tanımlayın:
+Define the following environment variable in Jenkins:
 - `ARGOCD_SERVER`: argocd.todo-app.local
 
-## 🛠️ Troubleshooting
 
-### Yaygın Sorunlar ve Çözümleri
 
-#### 1. Docker Compose Sorunları
+## 🔄 Development Workflow
+
+### 🏠 Local Development
 ```bash
-# Port çakışması
-docker compose down
-sudo lsof -i :3000  # Port 3000'i kullanan işlemi bulun
+# Start development environment
+docker compose up -d
 
-# Volume sorunları
-docker compose down -v
-docker system prune -f
+# Make code changes
+
+# Run tests
+docker compose -f docker-compose.test.yml run --rm user-service-test
+docker compose -f docker-compose.test.yml run --rm todo-service-test
+
+# Check pre-commit hooks
+pre-commit run --all-files
 ```
 
-#### 2. Kubernetes Sorunları
+### 🌿 Feature Branch Workflow
 ```bash
-# Pod'ların durumunu kontrol edin
-kubectl get pods -n todo-app
+# Create feature branch
+git checkout -b feature/new-feature
 
-# Pod loglarını inceleyin
-kubectl logs -f deployment/user-service -n todo-app
+# Push and create PR
+git push origin feature/new-feature
 
-# Secret'ları kontrol edin
-kubectl get secrets -n todo-app
+# Jenkins automatically runs:
+# build → test → security scan → staging deploy (on merge to master)
 ```
 
-#### 3. Image Pull Sorunları
+### 🚀 Production Release
 ```bash
-# Registry secret'ını kontrol edin
-kubectl get secret github-registry-secret -n todo-app -o yaml
+# Create release tag
+git tag v1.0.0
+git push origin v1.0.0
 
-# Yeni secret oluşturun
-kubectl delete secret github-registry-secret -n todo-app
-kubectl create secret docker-registry github-registry-secret \
-  --docker-server=ghcr.io \
-  --docker-username=<USERNAME> \
-  --docker-password=<TOKEN> \
-  -n todo-app
+# Jenkins automatically performs production deployment
+# (skips build/test stages)
 ```
 
-#### 4. ArgoCD Sorunları
-```bash
-# ArgoCD application'larını kontrol edin
-kubectl get applications -n argocd
+### 📋 Prerequisites Check
 
-# Application detaylarını inceleyin
-kubectl describe application staging-todo-app -n argocd
+Before starting, verify:
+- ✅ Docker and Docker Compose installed
+- ✅ Kubernetes cluster (minikube) running
+- ✅ kubectl configured
+- ✅ Helm installed (for Helm deployments)
+- ✅ Jenkins accessible with required plugins
 
-# ArgoCD server pod'unu yeniden başlatın
-kubectl rollout restart deployment argocd-server -n argocd
-```
+## 🤝 Contributing
 
-### Health Checks
-Tüm servisler `/health` endpoint'i sunar:
+1. Fork this repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Create a Pull Request
 
-```bash
-# Servislerin sağlık durumunu kontrol edin
-curl http://localhost:8001/health  # User Service
-curl http://localhost:8002/health  # Todo Service
-```
+## 📝 License
 
-## 🤝 Katkıda Bulunma
+This project is licensed under the MIT License.
 
-1. Bu repository'yi fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+## 📞 Contact
 
-## 📝 Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır.
-
-## 📞 İletişim
-
-Proje Sahibi: Kerem AR
+Project Owner: Kerem AR
 - GitHub: [@KeremAR](https://github.com/KeremAR)
 
 ---
 
-**Not**: Bu proje eğitim ve demonstrasyon amaçlıdır. Production ortamında kullanmadan önce güvenlik ayarlarını gözden geçirin.
+**Note**: This project is for educational and demonstration purposes. Review security settings before using in production.
